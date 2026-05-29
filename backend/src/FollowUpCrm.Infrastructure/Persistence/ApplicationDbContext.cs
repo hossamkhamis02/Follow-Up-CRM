@@ -6,6 +6,8 @@ namespace FollowUpCrm.Infrastructure.Persistence;
 
 public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
+    public DbSet<User> Users => Set<User>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.ApplyUtcDateTimeConventions();
@@ -48,6 +50,15 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
             if (entry.State == EntityState.Modified)
                 entry.Entity.UpdatedAtUtc = utcNow;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<User>())
+        {
+            if (entry.State == EntityState.Added)
+                entry.Entity.CreatedAt = utcNow;
+
+            if (entry.State == EntityState.Modified)
+                entry.Entity.UpdatedAt = utcNow;
         }
 
         foreach (var entry in ChangeTracker.Entries<ISoftDeletable>())

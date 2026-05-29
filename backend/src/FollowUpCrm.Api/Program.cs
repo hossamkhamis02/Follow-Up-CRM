@@ -1,7 +1,9 @@
 using FluentValidation;
 using Serilog;
+using FollowUpCrm.Api.Authentication;
 using FollowUpCrm.Api.Configuration;
 using FollowUpCrm.Api.Middleware;
+using FollowUpCrm.Api.Modules.Auth;
 using FollowUpCrm.Api.Modules.Customers;
 using FollowUpCrm.Api.Modules.Dashboard;
 using FollowUpCrm.Api.Modules.FollowUps;
@@ -34,11 +36,13 @@ try
     builder.Services.AddCorsConfiguration(builder.Configuration);
     builder.Services.AddMediatRConfiguration();
     builder.Services.AddApiVersioningConfiguration();
+    builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
     builder.Services.AddInfrastructure(builder.Configuration);
 
     builder.Services.AddSingleton<GlobalExceptionHandlingMiddleware>();
 
     builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+    builder.Services.AddAuthModule();
     builder.Services.AddIdentityModule();
     builder.Services.AddWorkspacesModule();
     builder.Services.AddPermissionsModule();
@@ -59,6 +63,8 @@ try
 
     app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
     app.UseCorsConfiguration();
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     if (app.Environment.IsDevelopment())
         app.UseSwaggerConfiguration();
@@ -69,6 +75,9 @@ try
         Predicate = healthCheck => healthCheck.Tags.Contains("database")
     });
 
+    await app.SeedDefaultAdminAsync();
+
+    app.MapAuthModule();
     app.MapIdentityModule();
     app.MapWorkspacesModule();
     app.MapPermissionsModule();

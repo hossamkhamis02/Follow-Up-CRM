@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using FollowUpCrm.Api.Authentication;
 
 namespace FollowUpCrm.Api.Modules.Customers;
 
@@ -13,7 +14,8 @@ public static class CustomersModule
     {
         var group = endpoints.MapGroup("/api/v{version:apiVersion}/customers")
             .WithTags("Customers")
-            .HasApiVersion(1);
+            .HasApiVersion(1)
+            .RequireAuthorization(AuthorizationPolicies.SalesRepOrAdmin);
 
         return endpoints;
     }
