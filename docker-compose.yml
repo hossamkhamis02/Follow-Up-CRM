@@ -1,0 +1,72 @@
+name: followup-crm-dev
+
+services:
+  postgres:
+    container_name: followup-crm-postgres
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-followupcrm}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-followupcrm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  pgadmin:
+    container_name: followup-crm-pgadmin
+    image: dpage/pgadmin4:8
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@followupcrm.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Backend (uncomment when ready to containerize) ────────────────────
+  # api:
+  #   container_name: followup-crm-api
+  #   build:
+  #     context: ./backend
+  #     dockerfile: ../docker/api/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=followupcrm;Username=postgres;Password=postgres
+  #     - Jwt__Key=followup-crm-dev-secret-key-min-32-chars!!
+  #     - Jwt__Issuer=FollowUpCrm
+  #     - Jwt__Audience=FollowUpCrmUsers
+  #     - Cors__AllowedOrigins__0=http://localhost
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  # ── Frontend (uncomment when ready to containerize) ───────────────────
+  # frontend:
+  #   container_name: followup-crm-frontend
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: ../docker/nginx/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - api
+
+volumes:
+  postgres_data:
+  pgadmin_data:

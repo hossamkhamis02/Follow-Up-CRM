@@ -1,0 +1,102 @@
+# ── .NET ──────────────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.vspscc
+*.vssscc
+.vs/
+publish/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+*.dll
+*.pdb
+*.exe
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.ipdb
+*.pgc
+*.exp
+*.lib
+*.xml
+!appsettings.json
+!appsettings.*.json
+!*.csproj
+!*.sln
+!nuget.config
+!Directory.Build.props
+!Directory.Build.targets
+*.snupkg
+*.nupkg
+packages/
+*.nuget.props
+*.nuget.targets
+project.nuget.cache
+project.assets.json
+
+# ── EF Core ───────────────────────────────────────────────────────────
+Migrations/
+
+# ── Angular / Frontend ────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+frontend/coverage/
+frontend/report/
+frontend/.npm
+frontend/.yarn/
+frontend/yarn.lock
+frontend/.yarn-integrity
+
+# ── Docker ────────────────────────────────────────────────────────────
+docker/postgres_data/
+docker/pgadmin_data/
+
+# ── IDE ───────────────────────────────────────────────────────────────
+.idea/
+*.swp
+*.swo
+*~
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/extensions.json
+.vscode/launch.json
+
+# ── OS ────────────────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# ── Environment & Secrets ────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+appsettings.Production.json
+*.pfx
+*.key
+*.pem
+*.jks
+*.keystore
+secrets.json
+
+# ── Logs ──────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Build Artifacts ───────────────────────────────────────────────────
+*.zip
+*.tar.gz
+*.rar
