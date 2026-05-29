@@ -8,6 +8,9 @@ using FollowUpCrm.Api.Modules.FollowUps;
 using FollowUpCrm.Api.Modules.Identity;
 using FollowUpCrm.Api.Modules.Permissions;
 using FollowUpCrm.Api.Modules.Workspaces;
+using FollowUpCrm.Infrastructure;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(new ConfigurationBuilder()
@@ -31,7 +34,7 @@ try
     builder.Services.AddCorsConfiguration(builder.Configuration);
     builder.Services.AddMediatRConfiguration();
     builder.Services.AddApiVersioningConfiguration();
-    builder.Services.AddHealthChecks();
+    builder.Services.AddInfrastructure(builder.Configuration);
 
     builder.Services.AddSingleton<GlobalExceptionHandlingMiddleware>();
 
@@ -61,6 +64,10 @@ try
         app.UseSwaggerConfiguration();
 
     app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health/database", new HealthCheckOptions
+    {
+        Predicate = healthCheck => healthCheck.Tags.Contains("database")
+    });
 
     app.MapIdentityModule();
     app.MapWorkspacesModule();
@@ -74,6 +81,10 @@ try
     #endregion
 
     app.Run();
+}
+catch (HostAbortedException)
+{
+    // Expected when EF Core tools build the host for design-time services.
 }
 catch (Exception ex)
 {

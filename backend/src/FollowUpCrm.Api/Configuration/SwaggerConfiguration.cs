@@ -11,13 +11,6 @@ public static class SwaggerConfiguration
     {
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "FollowUp CRM API",
-                Version = "v1",
-                Description = "SaaS CRM API - Modular Monolith with Vertical Slice Architecture"
-            });
-
             c.OrderActionsBy(a => a.GroupName);
         });
 
