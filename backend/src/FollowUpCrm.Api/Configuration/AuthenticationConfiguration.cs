@@ -34,11 +34,21 @@ public static class AuthenticationConfiguration
                     ValidIssuer = jwtOptions.Issuer,
                     ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
+                    NameClaimType = "FullName",
+                    RoleClaimType = "Role",
                     ClockSkew = TimeSpan.Zero
                 };
 
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        var authorizationHeader = context.Request.Headers.Authorization.ToString();
+                        if (authorizationHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                            context.Token = authorizationHeader["Bearer ".Length..].Trim();
+
+                        return Task.CompletedTask;
+                    },
                     OnChallenge = async context =>
                     {
                         context.HandleResponse();

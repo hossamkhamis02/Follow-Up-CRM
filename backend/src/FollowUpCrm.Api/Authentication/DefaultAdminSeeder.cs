@@ -14,6 +14,9 @@ public static class DefaultAdminSeeder
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+        if (app.Environment.IsEnvironment("Testing"))
+            await dbContext.Database.MigrateAsync();
+
         if (await dbContext.Users.IgnoreQueryFilters().AnyAsync(user => user.Email == DefaultAdminEmail))
             return;
 

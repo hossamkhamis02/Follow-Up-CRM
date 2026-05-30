@@ -8,6 +8,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 {
     public DbSet<User> Users => Set<User>();
 
+    public DbSet<Customer> Customers => Set<Customer>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.ApplyUtcDateTimeConventions();
