@@ -26,20 +26,21 @@ public static class AuthModule
         group.MapPost("/register", RegisterAsync)
             .AllowAnonymous()
             .WithName("Register")
-            .Produces<Result<AuthResponse>>(StatusCodes.Status201Created)
-            .Produces<Result>(StatusCodes.Status400BadRequest);
+            .Produces<ApiResponse<AuthResponse>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<object>>(StatusCodes.Status400BadRequest);
 
         group.MapPost("/login", LoginAsync)
             .AllowAnonymous()
             .WithName("Login")
-            .Produces<Result<AuthResponse>>()
-            .Produces<Result>(StatusCodes.Status401Unauthorized);
+            .Produces<ApiResponse<AuthResponse>>()
+            .Produces<ApiResponse<object>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized);
 
         group.MapGet("/me", GetCurrentUserAsync)
             .RequireAuthorization()
             .WithName("GetCurrentAuthUser")
-            .Produces<CurrentUserResponse>()
-            .Produces<Result>(StatusCodes.Status401Unauthorized);
+            .Produces<ApiResponse<CurrentUserResponse>>()
+            .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized);
 
         return endpoints;
     }
@@ -54,12 +55,14 @@ public static class AuthModule
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
-            return Results.BadRequest(Result.Failure(string.Join(" ", validationResult.Errors.Select(error => error.ErrorMessage))));
+            return Results.BadRequest(ApiResponse<object>.FailureResponse(
+                "Validation failed.",
+                validationResult.Errors.Select(error => error.ErrorMessage)));
 
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
         var emailExists = await dbContext.Users.AnyAsync(user => user.Email == normalizedEmail, cancellationToken);
         if (emailExists)
-            return Results.BadRequest(Result.Failure("A user with this email already exists."));
+            return Results.BadRequest(ApiResponse<object>.FailureResponse("A user with this email already exists."));
 
         var user = new User
         {
@@ -75,7 +78,9 @@ public static class AuthModule
 
         var response = CreateAuthResponse(user, tokenService, jwtOptions.Value);
 
-        return Results.Created($"/api/auth/users/{user.Id}", Result<AuthResponse>.Success(response));
+        return Results.Created(
+            $"/api/auth/users/{user.Id}",
+            ApiResponse<AuthResponse>.SuccessResponse(response));
     }
 
     private static async Task<IResult> LoginAsync(
@@ -88,17 +93,21 @@ public static class AuthModule
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
-            return Results.BadRequest(Result.Failure(string.Join(" ", validationResult.Errors.Select(error => error.ErrorMessage))));
+            return Results.BadRequest(ApiResponse<object>.FailureResponse(
+                "Validation failed.",
+                validationResult.Errors.Select(error => error.ErrorMessage)));
 
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
         var user = await dbContext.Users.SingleOrDefaultAsync(entity => entity.Email == normalizedEmail, cancellationToken);
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            return Results.Json(Result.Failure("Invalid email or password.", 401), statusCode: StatusCodes.Status401Unauthorized);
+            return Results.Json(
+                ApiResponse<object>.FailureResponse("Invalid email or password."),
+                statusCode: StatusCodes.Status401Unauthorized);
 
         var response = CreateAuthResponse(user, tokenService, jwtOptions.Value);
 
-        return Results.Ok(Result<AuthResponse>.Success(response));
+        return Results.Ok(ApiResponse<AuthResponse>.SuccessResponse(response));
     }
 
     [Authorize]
@@ -110,12 +119,16 @@ public static class AuthModule
         var role = principal.FindFirstValue("Role");
 
         if (!Guid.TryParse(userIdClaim, out var userId))
-            return Results.Json(Result.Failure("Invalid authentication token.", 401), statusCode: StatusCodes.Status401Unauthorized);
+            return Results.Json(
+                ApiResponse<object>.FailureResponse("Invalid authentication token."),
+                statusCode: StatusCodes.Status401Unauthorized);
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(role))
-            return Results.Json(Result.Failure("Invalid authentication token.", 401), statusCode: StatusCodes.Status401Unauthorized);
+            return Results.Json(
+                ApiResponse<object>.FailureResponse("Invalid authentication token."),
+                statusCode: StatusCodes.Status401Unauthorized);
 
-        return Results.Ok(new CurrentUserResponse(userId, email, fullName, role));
+        return Results.Ok(ApiResponse<CurrentUserResponse>.SuccessResponse(new CurrentUserResponse(userId, email, fullName, role)));
     }
 
     private static AuthResponse CreateAuthResponse(User user, IJwtTokenService tokenService, JwtOptions jwtOptions)

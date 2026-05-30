@@ -44,13 +44,13 @@ public static class AuthenticationConfiguration
                         context.HandleResponse();
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsJsonAsync(Result.Failure("Authentication is required.", 401));
+                        await context.Response.WriteAsJsonAsync(ApiResponse<object>.FailureResponse("Authentication is required."));
                     },
                     OnForbidden = async context =>
                     {
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsJsonAsync(Result.Failure("You are not authorized to access this resource.", 403));
+                        await context.Response.WriteAsJsonAsync(ApiResponse<object>.FailureResponse("You are not authorized to access this resource."));
                     }
                 };
             });
