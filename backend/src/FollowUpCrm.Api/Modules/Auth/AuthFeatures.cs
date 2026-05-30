@@ -9,6 +9,8 @@ public sealed record LoginRequest(string Email, string Password);
 
 public sealed record AuthResponse(Guid UserId, string FullName, string Email, string Role, string Token, DateTime ExpiresAt);
 
+public sealed record CurrentUserResponse(Guid Id, string Email, string FullName, string Role);
+
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
     public RegisterRequestValidator()

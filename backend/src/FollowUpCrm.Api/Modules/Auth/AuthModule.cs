@@ -4,6 +4,7 @@ using FollowUpCrm.Api.Authentication;
 using FollowUpCrm.Infrastructure.Persistence;
 using FollowUpCrm.Infrastructure.Persistence.Entities;
 using FollowUpCrm.Shared.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -35,9 +36,9 @@ public static class AuthModule
             .Produces<Result>(StatusCodes.Status401Unauthorized);
 
         group.MapGet("/me", GetCurrentUserAsync)
-            .RequireAuthorization("SalesRepOrAdmin")
+            .RequireAuthorization()
             .WithName("GetCurrentAuthUser")
-            .Produces<Result<AuthResponse>>()
+            .Produces<CurrentUserResponse>()
             .Produces<Result>(StatusCodes.Status401Unauthorized);
 
         return endpoints;
@@ -100,24 +101,21 @@ public static class AuthModule
         return Results.Ok(Result<AuthResponse>.Success(response));
     }
 
-    private static async Task<IResult> GetCurrentUserAsync(
-        ClaimsPrincipal principal,
-        ApplicationDbContext dbContext,
-        IJwtTokenService tokenService,
-        IOptions<JwtOptions> jwtOptions,
-        CancellationToken cancellationToken)
+    [Authorize]
+    private static IResult GetCurrentUserAsync(ClaimsPrincipal principal)
     {
-        var userIdClaim = principal.FindFirstValue("UserId") ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userIdClaim = principal.FindFirstValue("UserId");
+        var email = principal.FindFirstValue("Email");
+        var fullName = principal.FindFirstValue("FullName");
+        var role = principal.FindFirstValue("Role");
+
         if (!Guid.TryParse(userIdClaim, out var userId))
             return Results.Json(Result.Failure("Invalid authentication token.", 401), statusCode: StatusCodes.Status401Unauthorized);
 
-        var user = await dbContext.Users.FindAsync([userId], cancellationToken);
-        if (user is null)
-            return Results.NotFound(Result.Failure("User was not found.", 404));
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(role))
+            return Results.Json(Result.Failure("Invalid authentication token.", 401), statusCode: StatusCodes.Status401Unauthorized);
 
-        var response = CreateAuthResponse(user, tokenService, jwtOptions.Value);
-
-        return Results.Ok(Result<AuthResponse>.Success(response));
+        return Results.Ok(new CurrentUserResponse(userId, email, fullName, role));
     }
 
     private static AuthResponse CreateAuthResponse(User user, IJwtTokenService tokenService, JwtOptions jwtOptions)
