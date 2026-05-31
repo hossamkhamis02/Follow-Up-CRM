@@ -28,7 +28,7 @@ public static class CustomersModule
             .WithTags("Customers")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1)
-            .RequireAuthorization(AuthorizationPolicies.SalesRepOrAdmin);
+            .RequireAuthorization(AuthorizationPolicies.CrmUser);
 
         group.MapPost("", CreateCustomerAsync)
             .WithName("CreateCustomer")

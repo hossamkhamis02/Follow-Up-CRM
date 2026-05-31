@@ -15,7 +15,7 @@ public static class WorkspacesModule
         var group = endpoints.MapGroup("/api/v{version:apiVersion}/workspaces")
             .WithTags("Workspaces")
             .HasApiVersion(1)
-            .RequireAuthorization(AuthorizationPolicies.SalesRepOrAdmin);
+            .RequireAuthorization(AuthorizationPolicies.CrmUser);
 
         return endpoints;
     }

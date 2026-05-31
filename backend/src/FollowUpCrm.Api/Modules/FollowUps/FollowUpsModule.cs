@@ -15,7 +15,7 @@ public static class FollowUpsModule
         var group = endpoints.MapGroup("/api/v{version:apiVersion}/followups")
             .WithTags("FollowUps")
             .HasApiVersion(1)
-            .RequireAuthorization(AuthorizationPolicies.SalesRepOrAdmin);
+            .RequireAuthorization(AuthorizationPolicies.CrmUser);
 
         return endpoints;
     }

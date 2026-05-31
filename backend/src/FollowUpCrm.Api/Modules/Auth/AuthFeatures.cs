@@ -32,7 +32,9 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .Matches("[0-9]").WithMessage("Password must contain at least one number.");
 
         RuleFor(request => request.Role)
-            .IsInEnum();
+            .IsInEnum()
+            .NotEqual(UserRole.Admin)
+            .WithMessage("Admin users cannot be created through public registration.");
     }
 }
 

@@ -69,11 +69,14 @@ try
     if (app.Environment.IsDevelopment())
         app.UseSwaggerConfiguration();
 
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health")
+        .AllowAnonymous();
+
     app.MapHealthChecks("/health/database", new HealthCheckOptions
     {
         Predicate = healthCheck => healthCheck.Tags.Contains("database")
-    });
+    })
+        .AllowAnonymous();
 
     await app.SeedApplicationDataAsync();
 

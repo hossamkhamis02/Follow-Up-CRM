@@ -67,8 +67,18 @@ public static class AuthenticationConfiguration
 
         services.AddAuthorization(options =>
         {
+            options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
             options.AddPolicy(AuthorizationPolicies.AdminOnly, policy =>
                 policy.RequireRole(UserRole.Admin.ToString()));
+
+            options.AddPolicy(AuthorizationPolicies.CrmUser, policy =>
+                policy.RequireRole(
+                    UserRole.Admin.ToString(),
+                    UserRole.SalesRep.ToString(),
+                    UserRole.User.ToString()));
 
             options.AddPolicy(AuthorizationPolicies.SalesRepOrAdmin, policy =>
                 policy.RequireRole(UserRole.Admin.ToString(), UserRole.SalesRep.ToString()));
