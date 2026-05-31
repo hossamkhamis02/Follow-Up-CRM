@@ -75,7 +75,7 @@ try
         Predicate = healthCheck => healthCheck.Tags.Contains("database")
     });
 
-    await app.SeedDefaultAdminAsync();
+    await app.SeedApplicationDataAsync();
 
     app.MapAuthModule();
     app.MapIdentityModule();
