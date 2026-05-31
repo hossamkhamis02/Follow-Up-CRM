@@ -63,11 +63,12 @@ try
 
     app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
     app.UseCorsConfiguration();
-    app.UseAuthentication();
-    app.UseAuthorization();
 
     if (app.Environment.IsDevelopment())
         app.UseSwaggerConfiguration();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     app.MapHealthChecks("/health")
         .AllowAnonymous();
