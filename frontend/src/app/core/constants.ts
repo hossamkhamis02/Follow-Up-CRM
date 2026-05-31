@@ -4,6 +4,7 @@ export const API_BASE_URL = '/api';
 
 export const TOKEN_KEY = 'followup_crm_token';
 export const REFRESH_TOKEN_KEY = 'followup_crm_refresh_token';
+export const USER_KEY = 'followup_crm_user';
 
 export const SIDEBAR_WIDTH = 260;
 export const SIDEBAR_COLLAPSED_WIDTH = 64;

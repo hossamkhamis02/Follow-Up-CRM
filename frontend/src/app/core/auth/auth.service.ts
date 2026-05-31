@@ -1,76 +1,70 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
-import { ApiService } from '../services/api.service';
-import { LoginRequest, RegisterRequest, AuthResponse, AuthUser } from './auth.models';
-import { ApiResponse } from '../../shared/models/api-response.models';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY } from '../constants';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { AuthApiService } from '../api';
+import { AuthStorageService } from '../services';
+import { LoginRequest, LoginResponse, RegisterRequest, AuthUser } from '../models/auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private _currentUser = new BehaviorSubject<AuthUser | null>(null);
-  private _isAuthenticated = new BehaviorSubject<boolean>(false);
+  private readonly currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
+  private readonly isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
 
-  currentUser$ = this._currentUser.asObservable();
-  isAuthenticated$ = this._isAuthenticated.asObservable();
+  readonly currentUser$ = this.currentUserSubject.asObservable();
+  readonly isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  constructor(private api: ApiService) {
+  constructor(
+    private readonly authApi: AuthApiService,
+    private readonly authStorage: AuthStorageService
+  ) {
     this.initializeFromStorage();
   }
 
   private initializeFromStorage(): void {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = this.authStorage.getAccessToken();
+    const user = this.authStorage.getUser();
+
     if (token) {
-      this._isAuthenticated.next(true);
+      this.isAuthenticatedSubject.next(true);
+      this.currentUserSubject.next(user);
     }
   }
 
-  login(request: LoginRequest): Observable<AuthResponse> {
-    return this.api.post<AuthResponse>('identity/login', request).pipe(
-      map(response => response.data),
-      tap(data => {
-        if (data) {
-          this.setSession(data);
-        }
-      })
+  login(request: LoginRequest): Observable<LoginResponse> {
+    return this.authApi.login(request).pipe(
+      tap(response => this.setSession(response))
     );
   }
 
-  register(request: RegisterRequest): Observable<AuthResponse> {
-    return this.api.post<AuthResponse>('identity/register', request).pipe(
-      map(response => response.data)
-    );
+  register(request: RegisterRequest): Observable<LoginResponse> {
+    return this.authApi.register(request);
   }
 
   logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    this._currentUser.next(null);
-    this._isAuthenticated.next(false);
+    this.authStorage.clear();
+    this.currentUserSubject.next(null);
+    this.isAuthenticatedSubject.next(false);
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem(TOKEN_KEY);
+    return !!this.authStorage.getAccessToken();
   }
 
   getUserFullName(): string {
-    const user = this._currentUser.value;
-    return user ? `${user.firstName} ${user.lastName}` : '';
+    return this.currentUserSubject.value?.fullName ?? '';
   }
 
   getUserEmail(): string {
-    const user = this._currentUser.value;
+    const user = this.currentUserSubject.value;
     return user?.email ?? '';
   }
 
   hasRole(role: string): boolean {
-    const user = this._currentUser.value;
-    return user?.roles.includes(role) ?? false;
+    return this.currentUserSubject.value?.role === role;
   }
 
-  private setSession(response: AuthResponse): void {
-    localStorage.setItem(TOKEN_KEY, response.token);
-    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
-    this._currentUser.next(response.user);
-    this._isAuthenticated.next(true);
+  private setSession(response: LoginResponse): void {
+    this.authStorage.saveSession(response);
+    this.currentUserSubject.next(this.authStorage.getUser());
+    this.isAuthenticatedSubject.next(true);
   }
 }
