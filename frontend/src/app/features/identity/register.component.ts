@@ -53,7 +53,7 @@ import { RouterModule } from '@angular/router';
           </form>
         </mat-card-content>
         <mat-card-actions align="end">
-          <a mat-button routerLink="/identity/login">Already have an account? Sign in</a>
+          <a mat-button routerLink="/login">Already have an account? Sign in</a>
         </mat-card-actions>
       </mat-card>
     </div>

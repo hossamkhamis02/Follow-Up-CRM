@@ -2,15 +2,15 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { ApiErrorResponse } from '../models/shared';
-import { AuthStorageService } from '../services/auth-storage.service';
+import { AuthService } from '../auth/auth.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const authStorage = inject(AuthStorageService);
+  const authService = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        authStorage.clear();
+        authService.logout();
       }
 
       return throwError(() => normalizeError(error));

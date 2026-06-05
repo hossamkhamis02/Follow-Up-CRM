@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { AuthApiService } from '../api';
 import { AuthStorageService } from '../services';
@@ -14,7 +15,8 @@ export class AuthService {
 
   constructor(
     private readonly authApi: AuthApiService,
-    private readonly authStorage: AuthStorageService
+    private readonly authStorage: AuthStorageService,
+    private readonly router: Router
   ) {
     this.initializeFromStorage();
   }
@@ -39,14 +41,26 @@ export class AuthService {
     return this.authApi.register(request);
   }
 
-  logout(): void {
+  logout(redirectToLogin = true): void {
     this.authStorage.clear();
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
+
+    if (redirectToLogin) {
+      void this.router.navigateByUrl('/login');
+    }
   }
 
   isAuthenticated(): boolean {
-    return !!this.authStorage.getAccessToken();
+    return this.isAuthenticatedSubject.value;
+  }
+
+  currentUser(): AuthUser | null {
+    return this.currentUserSubject.value;
+  }
+
+  getToken(): string | null {
+    return this.authStorage.getAccessToken();
   }
 
   getUserFullName(): string {

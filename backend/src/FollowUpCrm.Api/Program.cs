@@ -8,6 +8,7 @@ using FollowUpCrm.Api.Modules.Customers;
 using FollowUpCrm.Api.Modules.Dashboard;
 using FollowUpCrm.Api.Modules.FollowUps;
 using FollowUpCrm.Api.Modules.Identity;
+using FollowUpCrm.Api.Modules.Leads;
 using FollowUpCrm.Api.Modules.Permissions;
 using FollowUpCrm.Api.Modules.Workspaces;
 using FollowUpCrm.Infrastructure;
@@ -47,6 +48,7 @@ try
     builder.Services.AddWorkspacesModule();
     builder.Services.AddPermissionsModule();
     builder.Services.AddCustomersModule();
+    builder.Services.AddLeadsModule();
     builder.Services.AddFollowUpsModule();
     builder.Services.AddDashboardModule();
 
@@ -86,6 +88,7 @@ try
     app.MapWorkspacesModule();
     app.MapPermissionsModule();
     app.MapCustomersModule();
+    app.MapLeadsModule();
     app.MapFollowUpsModule();
     app.MapDashboardModule();
 

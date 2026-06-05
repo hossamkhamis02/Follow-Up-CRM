@@ -1,8 +1,13 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard } from './core/guards/auth.guard';
 import { AppShellComponent } from './layout/app-shell/app-shell.component';
 
 export const routes: Routes = [
+  {
+    path: 'login',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/identity/login.component').then(m => m.LoginComponent),
+  },
   {
     path: 'identity',
     loadChildren: () => import('./features/identity/identity.routes').then(m => m.IDENTITY_ROUTES),

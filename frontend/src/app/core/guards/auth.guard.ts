@@ -10,6 +10,16 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/identity/login']);
-  return false;
+  return router.createUrlTree(['/login']);
+};
+
+export const guestGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isAuthenticated()) {
+    return true;
+  }
+
+  return router.createUrlTree(['/dashboard']);
 };

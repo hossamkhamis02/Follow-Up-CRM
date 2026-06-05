@@ -63,7 +63,7 @@ import { APP_NAME } from '../../core/constants';
           </button>
         </mat-menu>
       } @else {
-        <button mat-button routerLink="/identity/login">
+        <button mat-button routerLink="/login">
           <mat-icon>login</mat-icon>
           <span>Sign in</span>
         </button>
